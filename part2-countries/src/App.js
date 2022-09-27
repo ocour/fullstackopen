@@ -18,6 +18,8 @@ const App = () => {
     setFilter(event.target.value);
   }
 
+  console.log("APP RENDERED");
+
   return (
     <div>
       find countries <input value={filter} onChange={handleFilter} />
