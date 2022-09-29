@@ -2,7 +2,7 @@
   "persons": [
     {
       "name": "Arto Hellas",
-      "number": "040-12345067",
+      "number": "040-12345061",
       "id": 1
     },
     {
@@ -22,18 +22,8 @@
     },
     {
       "name": "Dan Abramov GG",
-      "number": "040-123458",
+      "number": "040-123456",
       "id": 5
-    },
-    {
-      "name": "Arto Hellas Juhani",
-      "number": "040-1234500",
-      "id": 6
-    },
-    {
-      "name": "Arto Hellas ",
-      "number": "040-1234506",
-      "id": 7
     }
   ]
 }

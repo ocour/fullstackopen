@@ -3,12 +3,14 @@ import Filter from './components/Filter';
 import PersonForm from './components/PersonForm';
 import Persons from './components/Persons';
 import personServices from './services/persons';
+import Notification from './components/Notification';
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [filter, setFilter] = useState('');
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
+  const [notification, setNotification] = useState([]);
 
   // Gets all persons from database
   useEffect(() => {
@@ -44,6 +46,14 @@ const App = () => {
           setPersons(persons.concat(returnedPerson));
           setNewName('');
           setNewNumber('');
+
+          // Sets notification
+          setNotification([`${returnedPerson.name} was added`, 'successful']);
+
+          // Removes notification after 2 seconds
+          setTimeout(() => {
+            setNotification([])
+          }, 2000)
         })
     }
     // if person exists in database but their existing number is not the same as new number
@@ -56,6 +66,23 @@ const App = () => {
           .then(returnedPerson => {
             // If id is the same as updated persons id we set it, otherwise we leave existing persons info
             setPersons(persons.map(person => person.id === returnedPerson.id ? returnedPerson : person));
+
+            // Sets notification
+            setNotification([`${returnedPerson.name}'s phone number was changed`, 'successful']);
+
+            // Removes notification after 2 seconds
+            setTimeout(() => {
+              setNotification([])
+            }, 2000)
+          })
+          .catch(error => {
+            // Sets notification
+            setNotification([`Information of ${newPerson.name} has already been removed from the server`, 'error']);
+            
+            // Removes notification after 2 seconds
+            setTimeout(() => {
+              setNotification([])
+            }, 2000)
           })
       }
     }
@@ -76,6 +103,15 @@ const App = () => {
       .then(response => {
         setPersons(persons.filter(person => person.id !== id));
       })
+      .catch(error => {
+        // Sets notification
+        setNotification([`Information of ${person[0].name} has already been removed from the server`, 'error']);
+        
+        // Removes notification after 2 seconds
+        setTimeout(() => {
+          setNotification([])
+        }, 2000)
+      })
     }
   }
 
@@ -94,6 +130,7 @@ const App = () => {
 
   return (
     <div>
+      <Notification message={notification} />
       <h2>Phonebook</h2>
       <Filter filter={filter} onChange={handleFilter}/>
       <h2>add a new</h2>
