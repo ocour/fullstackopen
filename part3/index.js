@@ -24,6 +24,17 @@ let notes = [
     }
 ]
 
+// Custom middleware
+const requestLogger = (request, response, next) => {
+    console.log('Method', request.method);
+    console.log('Path: ', request.path);
+    console.log('Body: ', request.body);
+    console.log('---');
+    next();
+}
+
+app.use(requestLogger);
+
 // root 
 app.get('/', (request, response) => {
     response.send('<h1>Hello World!</h1>')
@@ -88,6 +99,13 @@ app.post('/api/notes', (request, response) => {
     // Sends back note
     response.json(note);
 })
+
+// If request made to an route which isnt defined
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' });
+}
+
+app.use(unknownEndpoint);
 
 const PORT = 3001;
 app.listen(PORT, () => {

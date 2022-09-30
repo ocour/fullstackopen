@@ -1,4 +1,5 @@
 const express = require('express');
+const morgan = require('morgan');
 const app = express();
 
 app.use(express.json());
@@ -25,6 +26,12 @@ let persons = [
       "number": "39-23-6423122"
     }
 ]
+
+// custom token
+morgan.token('body', function (req, res) { return JSON.stringify(req.body) })
+
+// use morgan
+app.use(morgan(':method :url :status :req[content-length] - :response-time ms :body'))
 
 // root
 app.get('/', (request, response) => {
@@ -70,11 +77,6 @@ app.delete('/api/persons/:id', (request, response) => {
 app.post('/api/persons', (request, response) => {
     const body = request.body;
 
-    // Checks if person with name already exists
-    // case insensitive and whitespace insensitive
-    const existingPerson = persons.some(person => 
-        person.name.toLowerCase().replace(/\s/g,"") === body.name.toLowerCase().replace(/\s/g,""));
-
     // if given name or number is missing or empty string ""
     // return status code 400 and error message in json
     if(!body.name || !body.number)
@@ -83,8 +85,14 @@ app.post('/api/persons', (request, response) => {
             error: "name or body missing"
         })
     }
+
+    // Checks if person with name already exists
+    // case insensitive and whitespace insensitive
+    const existingPerson = persons.some(person => 
+        person.name.toLowerCase().replace(/\s/g,"") === body.name.toLowerCase().replace(/\s/g,""));
+
     // returns error message if person with given name exists
-    else if (existingPerson)
+    if (existingPerson)
     {
         return response.status(400).json({
             error: "person with name already exists"
