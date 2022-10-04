@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -7,28 +8,7 @@ app.use(express.static('build'));
 app.use(cors());
 app.use(express.json());
 
-let persons = [
-    { 
-      "id": 1,
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": 2,
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": 3,
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": 4,
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
+const Person = require('./models/person');
 
 // custom token
 morgan.token('body', function (req, res) { return JSON.stringify(req.body) })
@@ -43,7 +23,10 @@ app.get('/', (request, response) => {
 
 // gets all persons
 app.get('/api/persons', (request, response) => {
-    response.json(persons);
+    Person.find({})
+    .then(notes => {
+        response.json(notes);
+    })
 })
 
 // gets info
@@ -88,29 +71,17 @@ app.post('/api/persons', (request, response) => {
             error: "name or body missing"
         })
     }
+    
+    //persons.some(person => person.name.toLowerCase().replace(/\s/g,"") === body.name.toLowerCase().replace(/\s/g,""));
 
-    // Checks if person with name already exists
-    // case insensitive and whitespace insensitive
-    const existingPerson = persons.some(person => 
-        person.name.toLowerCase().replace(/\s/g,"") === body.name.toLowerCase().replace(/\s/g,""));
-
-    // returns error message if person with given name exists
-    if (existingPerson)
-    {
-        return response.status(400).json({
-            error: "person with name already exists"
-        })
-    }
-
-    const person = {
-        id: Math.floor(Math.random() * 100000),
+    const person = new Person({
         name: body.name,
-        number: body.number
-    }
+        number: body.number,
+    })
 
-    persons = persons.concat(person);
-
-    response.json(person);
+    person.save().then(savedPerson => {
+        response.json(savedPerson);
+    })
 })
 
 const unknownEndpoint = (request, response) => {
@@ -119,7 +90,7 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint);
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 })
