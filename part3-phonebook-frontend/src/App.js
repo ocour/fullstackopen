@@ -55,6 +55,16 @@ const App = () => {
             setNotification([])
           }, 2000)
         })
+        // if error
+        .catch(error => {
+            // Sets notification
+            setNotification([`${error.response.data.error}`, 'error']);
+
+            // Removes notification after 2 seconds
+            setTimeout(() => {
+              setNotification([])
+            }, 2000)
+        })
     }
     // if person exists in database but their existing number is not the same as new number
     else if(personExists.length > 0 && personHasDifNum)
