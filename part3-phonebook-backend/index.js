@@ -69,17 +69,8 @@ app.delete('/api/persons/:id', (request, response, next) => {
 })
 
 // When adding new person
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
     const body = request.body;
-
-    // if given name or number is missing or empty string ""
-    // return status code 400 and error message in json
-    if(!body.name || !body.number)
-    {
-        return response.status(400).json({
-            error: "name or body missing"
-        })
-    }
     
     //persons.some(person => person.name.toLowerCase().replace(/\s/g,"") === body.name.toLowerCase().replace(/\s/g,""));
 
@@ -88,9 +79,27 @@ app.post('/api/persons', (request, response) => {
         number: body.number,
     })
 
-    person.save().then(savedPerson => {
-        response.json(savedPerson);
-    })
+    // Checks whether or not person with existing name exist in database
+    Person.exists({ name: person.name })
+        .then(result => {
+            console.log(result);
+            if(result)
+            {
+                response.status(400).json({ error: `person ${person.name} already exists in database.` });
+            }
+            else
+            {
+                // add to database
+                person.save()
+                .then(savedPerson => {
+                    response.json(savedPerson);
+                })
+                .catch(error => next(error));
+            }
+        })
+        .catch(error => next(error));
+
+    
 })
 
 // update by id, for example updating phone number
@@ -104,9 +113,16 @@ app.put('/api/persons/:id', (request, response, next) => {
 
     // {new:true} is an option that gives back updated person
     // otherwise the old person would be given back
-    Person.findByIdAndUpdate(request.params.id, person, {new:true})
+    Person.findByIdAndUpdate(request.params.id, person, { new:true, runValidators: true })
         .then(updatedPerson => {
-            response.json(updatedPerson)
+            if(updatedPerson)
+            {
+                response.json(updatedPerson)
+            }
+            else
+            {
+                response.status(404).json({ error: `no ${person.name} in database` });
+            }
         })
         .catch(error => next(error));
 })
@@ -124,6 +140,10 @@ const errorHandler = (error, request, response, next) => {
     if(error.name === "CastError")
     {
         return response.status(400).send({ error: 'malformatted id' });
+    }
+    else if(error.name === "ValidationError")
+    {
+        return response.status(400).json({ error: error.message });
     }
 
     next(error);

@@ -76,6 +76,8 @@ const App = () => {
           .then(returnedPerson => {
             // If id is the same as updated persons id we set it, otherwise we leave existing persons info
             setPersons(persons.map(person => person.id === returnedPerson.id ? returnedPerson : person));
+            setNewName('');
+            setNewNumber('');
 
             // Sets notification
             setNotification([`${returnedPerson.name}'s phone number was changed`, 'successful']);
@@ -87,7 +89,10 @@ const App = () => {
           })
           .catch(error => {
             // Sets notification
-            setNotification([`Information of ${newPerson.name} has already been removed from the server`, 'error']);
+            setNotification([error.response.data.error, 'error']);
+
+            // // remove invalid person from persons
+            // setPersons(persons.filter(person => person.id !== personExists[0].id));
             
             // Removes notification after 2 seconds
             setTimeout(() => {
