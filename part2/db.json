@@ -4,7 +4,7 @@
       "id": 1,
       "content": "HTML is easy",
       "date": "2022-1-17T17:30:31.098Z",
-      "important": false
+      "important": true
     },
     {
       "id": 2,
@@ -19,40 +19,34 @@
       "important": true
     },
     {
-      "content": "GOD",
+      "content": "åpkodsaåpkasdåp",
       "date": "2022-09-27T11:34:00.116Z",
       "important": false,
       "id": 4
     },
     {
-      "content": "dong",
-      "date": "2022-09-27T11:40:17.621Z",
-      "important": false,
-      "id": 5
-    },
-    {
-      "content": "dong",
-      "date": "2022-09-27T11:40:19.095Z",
-      "important": false,
-      "id": 6
-    },
-    {
-      "content": "I AM SUPREME",
+      "content": "Jest is for testing",
       "date": "2022-09-27T11:41:36.215Z",
       "important": false,
       "id": 7
     },
     {
-      "content": "I AM GOD",
+      "content": "kjdsalkjasd",
       "date": "2022-09-27T11:42:08.064Z",
       "important": false,
       "id": 8
     },
     {
-      "content": "MY LORD, IM BALD",
+      "content": "poijadspojads",
       "date": "2022-09-28T11:36:20.257Z",
       "important": true,
       "id": 9
+    },
+    {
+      "content": "aqdsdsaads",
+      "date": "2022-10-06T10:01:29.636Z",
+      "important": true,
+      "id": 10
     }
   ]
 }
