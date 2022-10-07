@@ -3,37 +3,37 @@ const Note = require("../models/note");
 const logger = require("../utils/logger");
 
 // get all notes
-notesRouter.get("/", (request, response) => {
-    logger.info("getting all...");
-    Note.find({}).then(notes => {
-        response.json(notes);
-    });
+notesRouter.get("/", async (request, response) => {
+    const notes = await Note.find({});
+    response.json(notes);
 });
 
 // Gets and returns one note by its id
-notesRouter.get("/:id", (request, response, next) => {
+notesRouter.get("/:id", async (request, response, next) => {
     // gets id
     const id = request.params.id;
     // finds by id
-    Note.findById(id)
-        .then(note => {
-            // Not null
-            if(note)
-            {
-                response.json(note);
-            }
-            // Null
-            else
-            {
-                response.status(404).end();
-            }
-        })
-        // if error, passes to middleware
-        .catch(error => next(error));
+    try {
+        const note = await Note.findById(id);
+
+        if(note)
+        {
+            response.json(note);
+        }
+        // Null
+        else
+        {
+            response.status(404).end();
+        }
+    }
+    // if error
+    catch(exception) {
+        next(exception);
+    }
 });
 
 // Post/add note(s)
-notesRouter.post("/", (request, response, next) => {
+notesRouter.post("/", async (request, response, next) => {
     const body = request.body;
     logger.info(body);
 
@@ -45,21 +45,25 @@ notesRouter.post("/", (request, response, next) => {
     });
 
     // Add note
-    note.save()
-        .then(savedNote => {
-            response.json(savedNote);
-        })
-        .catch(error => next(error));
+    try {
+        const savedNote = await note.save();
+        response.status(201).json(savedNote);
+    }
+    // if error
+    catch(exception) {
+        next(exception);
+    }
 });
 
 // Deletes one note by its id
-notesRouter.delete("/:id", (request, response, next) => {
-    Note.findByIdAndRemove(request.params.id)
-        .then(result => {
-            logger.info(result);
-            response.status(204).end();
-        })
-        .catch(error => next(error));
+notesRouter.delete("/:id", async (request, response, next) => {
+    try {
+        await Note.findByIdAndRemove(request.params.id);
+        response.status(204).end();
+    }
+    catch(exception){
+        next(exception);
+    }
 });
 
 // Update by id
