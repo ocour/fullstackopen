@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const notesRouter = require("express").Router();
 const Note = require("../models/note");
 const logger = require("../utils/logger");
@@ -10,11 +11,9 @@ notesRouter.get("/", async (request, response) => {
 
 // Gets and returns one note by its id
 notesRouter.get("/:id", async (request, response, next) => {
-    // gets id
-    const id = request.params.id;
     // finds by id
     try {
-        const note = await Note.findById(id);
+        const note = await Note.findById(request.params.id);
 
         if(note)
         {
@@ -44,7 +43,7 @@ notesRouter.post("/", async (request, response, next) => {
         date: new Date(),
     });
 
-    // Add note
+    //add note
     try {
         const savedNote = await note.save();
         response.status(201).json(savedNote);
