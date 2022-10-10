@@ -3,6 +3,7 @@ const notesRouter = require("express").Router();
 const Note = require("../models/note");
 const User = require("../models/user");
 const logger = require("../utils/logger");
+const jwt = require("jsonwebtoken");
 
 // get all notes
 notesRouter.get("/", async (request, response) => {
@@ -36,20 +37,29 @@ notesRouter.get("/:id", async (request, response, next) => {
 
 // Post/add note(s)
 notesRouter.post("/", async (request, response, next) => {
-    const body = request.body;
-
-    const user = await User.findById(body.userId);
-
-    // Create note
-    const note = new Note({
-        content: body.content,
-        important: body.important === undefined ? false : body.important,
-        date: new Date(),
-        user: user._id,
-    });
-
-    //add note and note id to users
     try {
+        const body = request.body;
+        const token = getTokenFrom(request);
+
+        // eslint-disable-next-line no-undef
+        const decodeToken = jwt.verify(token, process.env.SECRET);
+        // if token invalid or missing
+        if(!decodeToken.id)
+        {
+            return response.status(401).json({ error: "token missing or invalid" });
+        }
+
+        const user = await User.findById(decodeToken.id);
+
+        // Create note
+        const note = new Note({
+            content: body.content,
+            important: body.important === undefined ? false : body.important,
+            date: new Date(),
+            user: user._id,
+        });
+
+        //add note and note id to users
         // saves note
         const savedNote = await note.save();
 
@@ -95,5 +105,16 @@ notesRouter.put("/:id", (request, response, next) => {
         })
         .catch(error => next(error));
 });
+
+//function
+const getTokenFrom = request => {
+    const authorization = request.get("authorization");
+    if(authorization && authorization.toLowerCase().startsWith("bearer "))
+    {
+        return authorization.substring(7);
+    }
+
+    return null;
+};
 
 module.exports = notesRouter;
