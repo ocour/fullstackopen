@@ -2,25 +2,58 @@ const mongoose = require('mongoose');
 const supertest = require('supertest');
 const app = require('../app');
 const helper = require('./test_helper');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const api = supertest(app);
 
 const Blog = require('../models/blog');
+const User = require('../models/user');
 
 // ran before every test
 beforeEach(async () => {
-    // delete existing blogs
+    // delete existing blogs and users
     await Blog.deleteMany({});
+    await User.deleteMany({});
+
+    // adds all users to database
+    for(let user of helper.initialUsers)
+    {
+        const saltRounds = 10;
+        let passwordHash = await bcrypt.hash(user.password, saltRounds);
+
+        let userObj = new User({
+            username: user.username,
+            name: user.name,
+            passwordHash: passwordHash
+        });
+
+        await userObj.save();
+    }
 
     // adds all blog to database
-    for(let blog of helper.initialBlogs)
+    for(let[index, blog] of helper.initialBlogs.entries())
     {
-        let blogObj = new Blog(blog);
-        await blogObj.save();
+        let user = helper.initialUsers[index];
+        let userOfDb = await User.findOne({ username: user.username });
+
+        let blogObj = new Blog({
+            _id: blog._id,
+            title: blog.title,
+            author: blog.author,
+            url: blog.url,
+            likes: blog.likes,
+            user: userOfDb._id
+        });
+
+        const savedBlog = await blogObj.save();
+
+        userOfDb.blogs = userOfDb.blogs.concat(savedBlog._id);
+        await userOfDb.save();
     }
 });
 
-test('notes are returned as json and notes length is correct', async () => {
+test('blogs are returned as json and blogs length is correct', async () => {
     const response = await api
         .get('/api/blogs')
         .expect(200)
@@ -34,7 +67,7 @@ test('tests that get returns id rather than _id', async () => {
     expect(response.body[0].id).toBeDefined();
 });
 
-test('test that a valid note can be added to the database', async () => {
+test('test that a valid blog can be added to the database', async () => {
     const newBlog = {
         _id: '5a422ba71b54a676234d17fb',
         title: 'TDD harms architecture',
@@ -44,8 +77,23 @@ test('test that a valid note can be added to the database', async () => {
         __v: 0
     };
 
+    // assuming password is correct and username is unique
+    let { username } = helper.initialUsers[0];
+
+    // gets id of user by username
+    const user = await User.findOne({ username });
+
+    const userForToken = {
+        username: username,
+        id: user._id,
+    };
+
+    // eslint-disable-next-line no-undef
+    const token = jwt.sign(userForToken, process.env.SECRET, {expiresIn: 60*60});
+
     await api.post('/api/blogs')
         .send(newBlog)
+        .set({'authorization': `bearer ${token}`})
         .expect(201)
         .expect('Content-Type', /application\/json/);
 
@@ -65,8 +113,22 @@ test('test that verifies that if likes property of new blog is missing it will d
         __v: 0
     };
 
+    // assuming password is correct and username is unique
+    let { username } = helper.initialUsers[0];
+
+    const user = await User.findOne({ username });
+
+    const userForToken = {
+        username: username,
+        id: user._id,
+    };
+
+    // eslint-disable-next-line no-undef
+    const token = jwt.sign(userForToken, process.env.SECRET, {expiresIn: 60*60});
+
     await api.post('/api/blogs')
         .send(newBlog)
+        .set({'authorization': `bearer ${token}`})
         .expect(201)
         .expect('Content-Type', /application\/json/);
 
@@ -90,8 +152,22 @@ test('test that a invalid blog with title missing gives an 400 status code', asy
         __v: 0
     };
 
+    // assuming password is correct and username is unique
+    let { username } = helper.initialUsers[0];
+
+    const user = await User.findOne({ username });
+
+    const userForToken = {
+        username: username,
+        id: user._id,
+    };
+
+    // eslint-disable-next-line no-undef
+    const token = jwt.sign(userForToken, process.env.SECRET, {expiresIn: 60*60});
+
     await api.post('/api/blogs')
         .send(newBlog)
+        .set('Authorization', `bearer ${token}`)
         .expect(400);
 });
 
@@ -104,18 +180,46 @@ test('test that a invalid blog with url missing gives an 400 status code', async
         __v: 0
     };
 
+    // assuming password is correct and username is unique
+    let { username } = helper.initialUsers[0];
+
+    const user = await User.findOne({ username });
+
+    const userForToken = {
+        username: username,
+        id: user._id,
+    };
+
+    // eslint-disable-next-line no-undef
+    const token = jwt.sign(userForToken, process.env.SECRET, {expiresIn: 60*60});
+
     await api.post('/api/blogs')
         .send(newBlog)
+        .set('Authorization', `bearer ${token}`)
         .expect(400);
 });
 
-test('succeeds with status code 204 if id is valid', async () => {
+test('deleting blog succeeds with status code 204 if id is valid', async () => {
     // gets blogs from database
     const blogsAtStart = await api.get('/api/blogs');
     const blogToDelete = blogsAtStart.body[0];
 
+    // assuming password is correct and username is unique
+    let { username } = helper.initialUsers[0];
+
+    const user = await User.findOne({ username });
+
+    const userForToken = {
+        username: username,
+        id: user._id,
+    };
+
+    // eslint-disable-next-line no-undef
+    const token = jwt.sign(userForToken, process.env.SECRET, {expiresIn: 60*60});
+
     await api
         .delete(`/api/blogs/${blogToDelete.id}`)
+        .set('Authorization', `bearer ${token}`)
         .expect(204);
 
     // compares length

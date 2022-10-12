@@ -27,6 +27,25 @@ const initialBlogs = [
     }  
 ];
 
+const initialUsers = [
+    {
+        username: 'root10',
+        name: 'Superuser10',
+        password: 'password',
+    },
+    {
+        username: 'root11',
+        name: 'Superuser11',
+        password: 'password',
+    },
+    {
+        username: 'root12',
+        name: 'Superuser12',
+        password: 'password',
+    },
+];
+
 module.exports = {
-    initialBlogs
+    initialBlogs,
+    initialUsers
 };
