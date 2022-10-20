@@ -5,7 +5,9 @@ const Notification = ({ message }) => {
     }
 
     return (
-        <div className={message[1] === 'successful' ? 'successful' : 'error'}>
+        <div className={`${message[1] === 'successful' 
+        ? 'successful border-green-600 border-2 p-4 rounded-sm bg-green-100 text-lg'
+        : 'error border-red-600 border-2 p-4 rounded-sm bg-red-100 text-lg'}`}>
             {message[0]}
         </div>
     )

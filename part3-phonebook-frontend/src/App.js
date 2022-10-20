@@ -151,20 +151,20 @@ const App = () => {
   }
 
   return (
-    <div>
-      <Notification message={notification} />
-      <h2>Phonebook</h2>
-      <Filter filter={filter} onChange={handleFilter}/>
-      <h2>add a new</h2>
-      <PersonForm 
-        addNewPerson={addNewPerson} 
-        newName={newName} 
-        handleNewName={handleNewName} 
-        newNumber={newNumber}
-        handleNewNumber={handleNewNumber}
-      />
-      <h2>Numbers</h2>
-      <Persons persons={persons} filter={filter} onDelete={deletePerson} />
+    <div className="container max-w-2xl mx-auto my-10 p-10 bg-sky-50 border-4 rounded-lg border-sky-200">
+      <div className="px-10">
+        <Notification message={notification} />
+        <h2 className="text-4xl font-bold py-2 text-gray-600 underline decoration-2">Phonebook</h2>
+        <Filter filter={filter} onChange={handleFilter}/>
+        <PersonForm 
+          addNewPerson={addNewPerson} 
+          newName={newName} 
+          handleNewName={handleNewName} 
+          newNumber={newNumber}
+          handleNewNumber={handleNewNumber}
+        />
+        <Persons persons={persons} filter={filter} onDelete={deletePerson} />
+      </div>
     </div>
   )
 }

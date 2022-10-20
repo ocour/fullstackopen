@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import Note from './components/Note';
-import noteServices from './services/notes'
-import Notification from './components/Notification'
+import noteServices from './services/notes';
+import loginService from './services/login';
+import Notification from './components/Notification';
+import LoginForm from './components/LoginForm';
+import NoteForm from './components/NoteForm';
 
 const Footer = () => {
   const footerStyle = {
@@ -23,6 +26,9 @@ const App = () => {
   const [newNote, setNewNote] = useState('');
   const [showAll, setShowAll] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     noteServices
@@ -76,6 +82,25 @@ const App = () => {
     setNewNote(event.target.value);
   }
 
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    
+    try {
+      const user = await loginService.login({
+        username, password
+      });
+      setUser(user);
+      setUsername('');
+      setPassword('');
+    }
+    catch (exception) {
+      setErrorMessage('Wrong credetials');
+      setTimeout(() => {
+        setErrorMessage(null);
+      }, 5000);
+    }
+  }
+
   // Both work the same
   //const notesToShow = showAll ? notes : notes.filter(note => note.important === true);
   const notesToShow = showAll ? notes : notes.filter(note => note.important);
@@ -84,6 +109,15 @@ const App = () => {
     <div>
       <h1>Notes</h1>
       <Notification message={errorMessage} />
+
+      {user === null
+      ? <LoginForm handleLogin={handleLogin} username={username} setUsername={setUsername} password={password} setPassword={setPassword} />
+      : <div>
+          <p>{user.name} logged-in</p>
+          {<NoteForm addNote={addNote} newNote={newNote} handleNoteChange={handleNoteChange} />}
+        </div>}
+
+      <h2>Notes</h2>
       <div>
         <button onClick={() => setShowAll(!showAll)}>
           show {showAll ? 'important' : 'all'}
@@ -98,13 +132,6 @@ const App = () => {
           />
         )}
       </ul>
-      <form onSubmit={addNote}>
-        <input 
-          value={newNote}
-          onChange={handleNoteChange}
-         />
-        <button type="submit">save</button>
-      </form>
       <Footer />
     </div>
   )
